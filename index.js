@@ -19,7 +19,8 @@ function help(message) {
 		["Admin Commands", [
 			["config show", "shows current configuration with descriptions"],
 			["config set <key> <value>", "set `<key>` to `<value>`"],
-			["config reset <key>", "reset `<key>` to the default value"]
+			["config reset <key>", "reset `<key>` to the default value"],
+			["shutdown", "this kills the bot (use with caution)"]
 		]]
 	];
 	const fields = commands.map(([category, entries]) => {return {
@@ -32,7 +33,7 @@ function help(message) {
 		thumbnail: {
 			url: avatarURL
 		},
-		description: `A successfull command always gives a response.\nSource available on [GitHub](${packageinfo.homepage}).`,
+		description: `A successfull command always gives a response.\nIn case of emergency poke <@!466033810929221632>.\nSource available on [GitHub](${packageinfo.homepage}).`,
 		author: {
 			name: `${nickname} Command Help`,
 			icon_url: avatarURL
@@ -170,6 +171,18 @@ function parseCommand(message, input) {
 		case "config":
 			configCmd(message, args);
 			break;
+		case "shutdown":
+			shutdown(message);
+			break;
+	}
+}
+function shutdown(message) {
+	// TODO check for admin_role
+	try {
+		console.log(`shut down by @${message.author.tag}. bye <3`)
+		client.destroy();
+	} finally {
+		process.exit(2); // TODO block this exit code from restarting in systemd unit
 	}
 }
 function messageHandler(message) {
