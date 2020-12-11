@@ -3,7 +3,7 @@ const client = new Discord.Client();
 const {ServerConfig, Birthdays} = require("./DataManager.js");
 //const Scheduler = require("./Scheduler.js");
 const config = require("./config.json");
-const bdaybot = require("./package.json");
+const packageinfo = require("./package.json");
 
 function help(message) {
 	const server = message.guild.id;
@@ -14,7 +14,7 @@ function help(message) {
 			["bday set <YYYY-MM-DD>", "set your birthday (with year)"],
 			["bday remove", "remove your birthday"],
 			["bday list", "list all birthdays"],
-			["help", "print this message"]
+			["help", "print help and general info"]
 		]],
 		["Admin Commands", [
 			["config show", "shows current configuration with descriptions"],
@@ -32,14 +32,14 @@ function help(message) {
 		thumbnail: {
 			url: avatarURL
 		},
-		description: `Source available on [GitHub](${bdaybot.homepage})`,
+		description: `A successfull command always gives a response.\nSource available on [GitHub](${packageinfo.homepage}).`,
 		author: {
 			name: `${nickname} Command Help`,
 			icon_url: avatarURL
 		},
 		fields,
 		footer: {
-			text: `${bdaybot.name} v${bdaybot.version}`
+			text: `${packageinfo.name} v${packageinfo.version}`
 		}
 	};
 	message.channel.send({embed});
@@ -142,7 +142,7 @@ function configShow(message) {
 		},
 		fields,
 		footer: {
-			text: `${bdaybot.name} v${bdaybot.version}`
+			text: `${packageinfo.name} v${packageinfo.version}`
 		}
 	};
 	message.channel.send({embed});
