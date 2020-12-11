@@ -1,3 +1,9 @@
+*.db
+*.sql
+!init.sql
+config.json
+
+
 # Logs
 logs
 *.log
