@@ -64,17 +64,19 @@ function bdaySet(message, input) {
 	const [, year, month, day] = match;
 	const checkstring = `${year || "2000"}-${month}-${day}`;
 	try {
-		if (!new Date(checkstring).toISOString().split("T")[0] === checkstring) return;
+		if (new Date(checkstring).toISOString().split("T")[0] !== checkstring) return;
 	} catch(e) {
 		return;
 	}
 	Birthdays.setUserBirthday(message.guild.id, message.author.id, day, month, year);
 	const datestring = Intl.DateTimeFormat("en-GB", {day: "numeric", month: "long", year: year ? "numeric" : undefined}).format(new Date(checkstring));
-	message.channel.send(`:white_check_mark: Your birthday was set to ${datestring}.`);
+	message.channel.send(`:white_check_mark: Your birthday was set to **${datestring}**.`);
+	// TODO check if birthday is today, add role if necessary
 }
 function bdayRemove(message) {
 	const changes = Birthdays.removeUserBirthday(message.guild.id, message.author.id);
 	if (changes) {
+		// TODO remove birthday role if necessary
 		message.channel.send(`:x: Your birthday was removed.`);
 	}
 }
@@ -171,23 +173,26 @@ function parseCommand(message, input) {
 	}
 }
 function messageHandler(message) {
-	if (message.author.bot) return;
-	const server = message.guild.id;
-	if (!config.servers.includes(server)) return;
-	const channel = ServerConfig.get(server, "command_channel");
-	if (!channel || channel != message.channel.id) return;
-	const serverprefix = ServerConfig.get(server, "prefix");
-	const defaultprefix = `<@!${client.user.id}> `;
-	if (message.content.startsWith(serverprefix)) {
-		parseCommand(message, message.content.slice(serverprefix.length));
-	} else if (message.content.startsWith(defaultprefix)) {
-		parseCommand(message, message.content.slice(defaultprefix.length));
+	try {
+		if (message.author.bot) return;
+		const server = message.guild.id;
+		if (!config.servers.includes(server)) return;
+		const channel = ServerConfig.get(server, "command_channel");
+		if (!channel || channel != message.channel.id) return;
+		const serverprefix = ServerConfig.get(server, "prefix");
+		const defaultprefix = `<@!${client.user.id}> `;
+		if (message.content.startsWith(serverprefix)) {
+			parseCommand(message, message.content.slice(serverprefix.length));
+		} else if (message.content.startsWith(defaultprefix)) {
+			parseCommand(message, message.content.slice(defaultprefix.length));
+		}
+	} catch(e) {
+		console.log(e);
 	}
 }
 function init() {
 	client.once("ready", () => {
 		console.log("Ready!");
-		//bdayAlert("786642586730889257", "466033810929221632");
 	});
 	client.on("message", messageHandler);
 	client.login(config.token);
