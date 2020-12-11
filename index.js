@@ -59,10 +59,24 @@ function bdayCmd(message, input) {
 	}
 }
 function bdaySet(message, input) {
-	// TODO implement bdaySet
+	const match = input.match(/^(?:(\d{4})-)?(\d{2})-(\d{2})$/);
+	if (!match) return;
+	const [, year, month, day] = match;
+	const checkstring = `${year || "2000"}-${month}-${day}`;
+	try {
+		if (!new Date(checkstring).toISOString().split("T")[0] === checkstring) return;
+	} catch(e) {
+		return;
+	}
+	Birthdays.setUserBirthday(message.guild.id, message.author.id, day, month, year);
+	const datestring = Intl.DateTimeFormat("en-GB", {day: "numeric", month: "long", year: year ? "numeric" : undefined}).format(new Date(checkstring));
+	message.channel.send(`:white_check_mark: Your birthday was set to ${datestring}.`);
 }
 function bdayRemove(message) {
-	// TODO implement bdayRemove
+	const changes = Birthdays.removeUserBirthday(message.guild.id, message.author.id);
+	if (changes) {
+		message.channel.send(`:x: Your birthday was removed.`);
+	}
 }
 function bdayList(message) {
 	// TODO implement bdayList

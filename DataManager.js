@@ -34,17 +34,17 @@ const ServerConfig = (function() {
 
 const Birthdays = (function() {
 	function getUsersByBirthday(server, day, month) {
-		return db.prepare("SELECT user FROM birthdays WHERE (server, day, month) = (?, ?);").all([server, day, month]).map(row => row.user);
+		return db.prepare("SELECT user FROM birthdays WHERE (server, day, month) = (?, ?, ?);").all([server, day, month]).map(row => row.user);
 	}
 	function setUserBirthday(server, user, day, month, year) {
 		if (db.prepare("SELECT 1 FROM birthdays WHERE (server, user) = (?, ?);").get([server, user])) {
 			db.prepare("UPDATE birthdays SET day = ?, month = ?, year = ? WHERE (server, user) = (?, ?);").run([day, month, year, server, user]);
 		} else {
-			db.prepare("INSERT INTO birthdays (server, user, day, month, year) VALUES (?, ?, ?);").run([server, user, day, month, year]);
+			db.prepare("INSERT INTO birthdays (server, user, day, month, year) VALUES (?, ?, ?, ?, ?);").run([server, user, day, month, year]);
 		}
 	}
 	function removeUserBirthday(server, user) {
-		const info = db.prepare("DELETE FROM birthdays WHERE (server, user) = (?, ?);").run([server, user]);
+		const info = db.prepare("DELETE FROM birthdays WHERE (server, user) = (?, ?);").run([server, user]);
 		return info.changes;
 	}
 	function getBirthdays(server) {
@@ -53,6 +53,7 @@ const Birthdays = (function() {
 	return {
 		getUsersByBirthday,
 		setUserBirthday,
+		removeUserBirthday,
 		getBirthdays
 	}
 })();
