@@ -85,7 +85,9 @@ function bdayList(message) {
 	// TODO implement bdayList
 }
 function configCmd(message, input) {
-	// TODO check for admin_role
+	const server = message.guild.id;
+	const admin_role = ServerConfig.get(server, "admin_role");
+	if (!message.member.roles.cache.has(admin_role)) return;
 	const [, command, args] = input.match(/^([^\s]+)(?:\s+(.*))?/);
 	switch (command) {
 		case "set":
@@ -177,7 +179,9 @@ function parseCommand(message, input) {
 	}
 }
 function shutdown(message) {
-	// TODO check for admin_role
+	const server = message.guild.id;
+	const admin_role = ServerConfig.get(server, "admin_role");
+	if (!message.member.roles.cache.has(admin_role)) return;
 	try {
 		console.log(`shut down by @${message.author.tag}. bye <3`)
 		client.destroy();
