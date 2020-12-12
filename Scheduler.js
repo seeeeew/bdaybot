@@ -14,10 +14,10 @@ function Scheduler(server_id) {
 		}
 		if (time) {
 			[timeRule.hour, timeRule.minute] = time.split(":").map(part => part * 1);
-			timeJob = schedule.scheduleJob(timeRule, () => timeCommand(server_id));
+			timeJob = schedule.scheduleJob(timeRule, (time) => timeCommand(server_id, time));
 		}
 		[midnightRule.hour, midnightRule.minute] = [0, 0];
-		midnightJob = schedule.scheduleJob(midnightRule, () => midnightCommand(server_id));
+		midnightJob = schedule.scheduleJob(midnightRule, (time) => midnightCommand(server_id, time));
 	}
 	function setTimezone(timezone) {
 		timeRule.tz = timezone;
