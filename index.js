@@ -208,8 +208,10 @@ function bdayAlert(server_id, user_id) {
 	channel.send(message);
 }
 function checkBdayAlert(server, time) {
-	// TODO implement checkBdayAlert
-	console.log(server, time, "checkBdayAlert");
+	const alert_channel = ServerConfig.get(server, "alert_channel");
+	const alert_message = ServerConfig.get(server, "alert_message");
+	if (!alert_channel || !alert_message) return;
+	Birthdays.getUsersByBirthday(server, time.getDate(), time.getMonth() + 1).forEach((user) => bdayAlert(server, user));
 }
 function checkBdayRole(server, time) {
 	// TODO implement checkBdayRole
