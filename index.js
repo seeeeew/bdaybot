@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const {ServerConfig, Birthdays} = require("./DataManager.js");
-//const Scheduler = require("./Scheduler.js");
+const Scheduler = require("./Scheduler.js");
 const config = require("./config.json");
 const packageinfo = require("./package.json");
 
@@ -150,16 +150,16 @@ function configShow(message) {
 	};
 	message.channel.send({embed});
 }
-function bdayAlert(server_id, user_id) {
-	const channel_id = ServerConfig.get(server_id, "alert_channel");
-	if (!channel_id) return;
-	const server = client.guilds.cache.find(server => server.id == server_id);
-	if (!server) return;
-	const channel = server.channels.cache.find(channel => channel.id == channel_id);
-	if (!channel) return;
-	const template = ServerConfig.get(server_id, "alert_message") || "Happy birthday, {user}! :partying_face:";
-	const message = template.replace("{user}", `<@!${user_id}>`);
-	channel.send(message);
+function shutdown(message) {
+	const server = message.guild.id;
+	const admin_role = ServerConfig.get(server, "admin_role");
+	if (!message.member.roles.cache.has(admin_role)) return;
+	try {
+		console.log(`shut down by @${message.author.tag}. bye <3`)
+		client.destroy();
+	} finally {
+		process.exit(2); // TODO block this exit code from restarting in systemd unit
+	}
 }
 function parseCommand(message, input) {
 	const [, command, args] = input.match(/^([^\s]+)(?:\s+(.*))?/);
@@ -176,17 +176,6 @@ function parseCommand(message, input) {
 		case "shutdown":
 			shutdown(message);
 			break;
-	}
-}
-function shutdown(message) {
-	const server = message.guild.id;
-	const admin_role = ServerConfig.get(server, "admin_role");
-	if (!message.member.roles.cache.has(admin_role)) return;
-	try {
-		console.log(`shut down by @${message.author.tag}. bye <3`)
-		client.destroy();
-	} finally {
-		process.exit(2); // TODO block this exit code from restarting in systemd unit
 	}
 }
 function messageHandler(message) {
@@ -207,14 +196,47 @@ function messageHandler(message) {
 		console.log(e);
 	}
 }
+function bdayAlert(server_id, user_id) {
+	const channel_id = ServerConfig.get(server_id, "alert_channel");
+	if (!channel_id) return;
+	const server = client.guilds.cache.find(server => server.id == server_id);
+	if (!server) return;
+	const channel = server.channels.cache.find(channel => channel.id == channel_id);
+	if (!channel) return;
+	const template = ServerConfig.get(server_id, "alert_message") || "Happy birthday, {user}! :partying_face:";
+	const message = template.replace("{user}", `<@!${user_id}>`);
+	channel.send(message);
+}
+function checkBdayAlert(server, time) {
+	// TODO implement checkBdayAlert
+	console.log(server, time, "checkBdayAlert");
+}
+function checkBdayRole(server, time) {
+	// TODO implement checkBdayRole
+	console.log(server, time, "checkBdayRole");
+}
+function updateSchedulers() {
+	Object.values(Scheduler.schedulers).forEach(server => {
+		if (!client.guilds.cache.has(server)) {
+			Scheduler(server).destroy();
+		}
+	});
+	[...client.guilds.cache.keys()].forEach(server => {
+		if (!Scheduler.schedulers.hasOwnProperty(server)) {
+			const time = ServerConfig.get(server, "alert_time");
+			const timezone = ServerConfig.get(server, "timezone");
+			Scheduler(server).init(time, timezone, checkBdayAlert, checkBdayRole);
+		}
+	});
+}
 function init() {
 	client.once("ready", () => {
+		updateSchedulers();
+		client.on("message", messageHandler);
 		console.log("Ready!");
 	});
-	client.on("message", messageHandler);
 	client.login(config.token);
 	process.on("exit", () => client.destroy());
-	// TODO implement scheduler
 }
 init();
 
