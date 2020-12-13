@@ -82,7 +82,50 @@ function bdayRemove(message) {
 	}
 }
 function bdayList(message) {
-	// TODO implement bdayList
+	const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+	const server = message.guild.id;
+	const currentyear = new Date().getFullYear();
+	const rows = Birthdays.getBirthdays(server);
+	message.guild.members.fetch({user: rows.map(row => row.user)}).then(() => {
+		const birthdays = rows.map(row => {
+			const member = message.guild.member(row.user);
+			if (member) {
+				row.name = member.displayName;
+			} else {
+				Birthdays.removeUserBirthday(server, row.user);
+			}
+			if (row.year) row.age = currentyear - row.year;
+			return row;
+		}).filter(row => !!row.name).sort((a, b) => {
+			return a.month != b.month ? a.month - b.month : (a.day != b.day ? a.day - b.day : a.name.localeCompare(b.name));
+		}).reduce((acc, cv) => {
+			(acc[cv.month - 1] = acc[cv.month - 1] || []).push(cv);
+			return acc;
+		}, []).map(list => list.reduce((acc, cv) => {
+			(acc[cv.day] = acc[cv.day] || []).push(cv);
+			return acc;
+		}, []));
+		const fields = months.map((name, i) => {
+			let value = "(none)";
+			if (birthdays[i] && birthdays[i].length) {
+				value = birthdays[i].map((day, i) => i + ": " + day.map(row => `<@!${row.user}>` + (row.age ? ` (${row.age})` : "")).join(", ")).filter(entry => !!entry).join("\n");
+			}
+			return {
+				name,
+				value,
+				inline: true
+			}
+		});
+		const embed = {
+			title: "Birthday List",
+			fields,
+			timestamp: new Date(),
+			footer: {
+				text: `${packageinfo.name} v${packageinfo.version}`
+			}
+		};
+		message.channel.send({embed});
+	});
 }
 function configCmd(message, input) {
 	const server = message.guild.id;
