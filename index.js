@@ -207,6 +207,7 @@ function parseCommand(message, input) {
 function messageHandler(message) {
 	try {
 		if (message.author.bot) return;
+		if (!message.guild) return;
 		const server = message.guild.id;
 		if (!config.servers.includes(server)) return;
 		const channel = ServerConfig.get(server, "command_channel");
