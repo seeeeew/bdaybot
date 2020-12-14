@@ -30,17 +30,15 @@ function help(message) {
 	const avatarURL = client.user.avatarURL();
 	const nickname = message.guild.member(client.user).displayName;
 	const embed = {
+		title: `${nickname} Command Help`,
 		thumbnail: {
 			url: avatarURL
 		},
 		description: `A successfull command always gives a response.\nIn case of emergency poke <@!466033810929221632>.\nSource available on [GitHub](${packageinfo.homepage}).`,
-		author: {
-			name: `${nickname} Command Help`,
-			icon_url: avatarURL
-		},
 		fields,
 		footer: {
-			text: `${packageinfo.name} v${packageinfo.version}`
+			text: `${packageinfo.name} v${packageinfo.version}`,
+			icon_url: avatarURL
 		}
 	};
 	message.channel.send({embed});
@@ -116,12 +114,14 @@ function bdayList(message) {
 				inline: true
 			}
 		});
+		const avatarURL = client.user.avatarURL();
 		const embed = {
 			title: "Birthday List",
+			description: `Birthdays for **${message.guild.name}** in **${currentyear}**:`,
 			fields,
-			timestamp: new Date(),
 			footer: {
-				text: `${packageinfo.name} v${packageinfo.version}`
+				text: `${packageinfo.name} v${packageinfo.version}`,
+				icon_url: avatarURL
 			}
 		};
 		message.channel.send({embed});
@@ -170,25 +170,23 @@ function configShow(message) {
 		command_channel: values.command_channel ? `<#${values.command_channel}>` : "*(not set)*",
 		alert_channel: values.alert_channel ? `<#${values.alert_channel}>` : "*(not set)*",
 		alert_message: values.alert_message ? "`" + values.alert_message + "`" : "*(not set)*",
-		alert_time: values.alert_time ? values.alert_time : "*(not set)*",
-		timezone: values.timezone ? values.timezone : "*(not set)*",
+		alert_time: values.alert_time ? "`" + values.alert_time + "`" : "*(not set)*",
+		timezone: values.timezone ? "`" + values.timezone + "`" : "*(not set)*",
 		bday_role: values.bday_role ? `<@&${values.bday_role}>` : "*(not set)*"
 	};
 	const fields = keys.map(key => {return {name: key, value: `${fieldvalues[key]}\n${descriptions[key]}`}});
 	const avatarURL = client.user.avatarURL();
 	const nickname = message.guild.member(client.user).displayName;
 	const embed = {
+		title: `${nickname} Configuration`,
 		thumbnail: {
 			url: avatarURL
 		},
-		description: `Current configuration on **${message.guild.name}**`,
-		author: {
-			name: `${nickname} Configuration`,
-			icon_url: avatarURL
-		},
+		description: `Current configuration for **${message.guild.name}**:`,
 		fields,
 		footer: {
-			text: `${packageinfo.name} v${packageinfo.version}`
+			text: `${packageinfo.name} v${packageinfo.version}`,
+			icon_url: avatarURL
 		}
 	};
 	message.channel.send({embed});
