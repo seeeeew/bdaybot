@@ -19,8 +19,7 @@ function help(message) {
 		["Admin Commands", [
 			["config show", "shows current configuration with descriptions"],
 			["config set <key> <value>", "set `<key>` to `<value>`"],
-			["config reset <key>", "reset `<key>` to the default value"],
-			["shutdown", "this kills the bot (use with caution)"]
+			["config reset <key>", "reset `<key>` to the default value"]
 		]]
 	];
 	const fields = commands.map(([category, entries]) => {return {
@@ -191,17 +190,6 @@ function configShow(message) {
 	};
 	message.channel.send({embed});
 }
-function shutdown(message) {
-	const server = message.guild.id;
-	const admin_role = ServerConfig.get(server, "admin_role");
-	if (!message.member.roles.cache.has(admin_role)) return;
-	try {
-		console.log(`shut down by @${message.author.tag}. bye <3`)
-		client.destroy();
-	} finally {
-		process.exit(2); // TODO block this exit code from restarting in systemd unit
-	}
-}
 function parseCommand(message, input) {
 	const [, command, args] = input.match(/^([^\s]+)(?:\s+(.*))?/);
 	switch (command) {
@@ -213,9 +201,6 @@ function parseCommand(message, input) {
 			break;
 		case "config":
 			configCmd(message, args);
-			break;
-		case "shutdown":
-			shutdown(message);
 			break;
 	}
 }
