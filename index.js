@@ -240,9 +240,21 @@ function checkBdayAlert(server, time) {
 	if (!alert_channel || !alert_message) return;
 	Birthdays.getUsersByBirthday(server, time.getDate(), time.getMonth() + 1).forEach((user) => bdayAlert(server, user));
 }
-function checkBdayRole(server, time) {
-	// TODO implement checkBdayRole
-	console.log(server, time, "checkBdayRole");
+function checkBdayRole(server_id, time) {
+	const day = time.getDate();
+	const month = time.getMonth() + 1;
+	const role_id = ServerConfig.get(server_id, "bday_role");
+	const server = client.guilds.cache.get(server_id);
+	const bdayusers = Birthdays.getUsersByBirthday(server_id, day, month);
+	server.members.fetch().then((members) => {
+		members.forEach((member, id) => {
+			if (member.roles.cache.has(role_id) && !bdayusers.includes(member.user.id)) {
+				member.roles.remove(role_id, "Today is not their birthday.");
+			} else if (bdayusers.includes(member.user.id) && !member.roles.cache.has(role_id)) {
+				member.roles.add(role_id, "Today is their birthday.");
+			}
+		});
+	});
 }
 function updateSchedulers() {
 	Object.values(Scheduler.schedulers).forEach(server => {
