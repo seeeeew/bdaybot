@@ -1,13 +1,13 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
-const {ServerConfig, Birthdays} = require("./DataManager.js");
+const {GuildConfig, Birthdays} = require("./DataManager.js");
 const Scheduler = require("./Scheduler.js");
 const config = require("./config.json");
 const packageinfo = require("./package.json");
 
 function help(message) {
-	const server = message.guild.id;
-	const prefix = ServerConfig.get(server, "prefix") || `@${client.user.username}#${client.user.discriminator} `;
+	const guild_id = message.guild.id;
+	const prefix = GuildConfig.get(guild_id, "prefix") || `@${client.user.username}#${client.user.discriminator} `;
 	const commands = [
 		["User Commands", [
 			["bday set <MM-DD>", "set your birthday (without year)"],
@@ -80,16 +80,16 @@ function bdayRemove(message) {
 }
 function bdayList(message) {
 	const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-	const server = message.guild.id;
+	const guild_id = message.guild.id;
 	const currentyear = new Date().getFullYear();
-	const rows = Birthdays.getBirthdays(server);
-	message.guild.members.fetch({user: rows.map(row => row.user)}).then(() => {
+	const rows = Birthdays.getBirthdays(guild_id);
+	message.guild.members.fetch({user: rows.map(row => row.user_id)}).then(() => {
 		const birthdays = rows.map(row => {
-			const member = message.guild.member(row.user);
+			const member = message.guild.member(row.user_id);
 			if (member) {
 				row.name = member.displayName;
 			} else {
-				Birthdays.removeUserBirthday(server, row.user);
+				Birthdays.removeUserBirthday(guild_id, row.user_id);
 			}
 			if (row.year) row.age = currentyear - row.year;
 			return row;
@@ -105,7 +105,7 @@ function bdayList(message) {
 		const fields = months.map((name, i) => {
 			let value = "(none)";
 			if (birthdays[i] && birthdays[i].length) {
-				value = birthdays[i].map((day, i) => i + ": " + day.map(row => `<@!${row.user}>` + (row.age ? ` (${row.age})` : "")).join(", ")).filter(entry => !!entry).join("\n");
+				value = birthdays[i].map((day, i) => i + ": " + day.map(row => `<@!${row.user_id}>` + (row.age ? ` (${row.age})` : "")).join(", ")).filter(entry => !!entry).join("\n");
 			}
 			return {
 				name,
@@ -127,8 +127,8 @@ function bdayList(message) {
 	});
 }
 function configCmd(message, input) {
-	const server = message.guild.id;
-	const admin_role = ServerConfig.get(server, "admin_role");
+	const guild_id = message.guild.id;
+	const admin_role = GuildConfig.get(guild_id, "admin_role");
 	if (!message.member.roles.cache.has(admin_role)) return;
 	const [, command, args] = input.match(/^([^\s]+)(?:\s+(.*))?/);
 	switch (command) {
@@ -150,7 +150,7 @@ function configReset(message, input) {
 	// TODO implement configReset
 }
 function configShow(message) {
-	const server = message.guild.id;
+	const guild_id = message.guild.id;
 	const descriptions = {
 		prefix: "command prefix this bot should react to",
 		admin_role: "role required to use admin commands",
@@ -162,7 +162,7 @@ function configShow(message) {
 		bday_role: "role that will be given to the birthday person for the duration of their birthday"
 	};
 	const keys = Object.keys(descriptions);
-	const values = Object.fromEntries(Object.keys(descriptions).map(key => [key, ServerConfig.get(server, key)]));
+	const values = Object.fromEntries(Object.keys(descriptions).map(key => [key, GuildConfig.get(guild_id, key)]));
 	const fieldvalues = {
 		prefix: values.prefix ? "`" + values.prefix + "`" : "*(not set)*",
 		admin_role: values.admin_role ? `<@&${values.admin_role}>` : "*(not set)*",
@@ -208,14 +208,14 @@ function messageHandler(message) {
 	try {
 		if (message.author.bot) return;
 		if (!message.guild) return;
-		const server = message.guild.id;
-		if (!config.servers.includes(server)) return;
-		const channel = ServerConfig.get(server, "command_channel");
+		const guild_id = message.guild.id;
+		if (!config.guilds.includes(guild_id)) return;
+		const channel = GuildConfig.get(guild_id, "command_channel");
 		if (!channel || channel != message.channel.id) return;
-		const serverprefix = ServerConfig.get(server, "prefix");
+		const guildprefix = GuildConfig.get(guild_id, "prefix");
 		const defaultprefix = `<@!${client.user.id}> `;
-		if (message.content.startsWith(serverprefix)) {
-			parseCommand(message, message.content.slice(serverprefix.length));
+		if (message.content.startsWith(guildprefix)) {
+			parseCommand(message, message.content.slice(guildprefix.length));
 		} else if (message.content.startsWith(defaultprefix)) {
 			parseCommand(message, message.content.slice(defaultprefix.length));
 		}
@@ -223,30 +223,30 @@ function messageHandler(message) {
 		console.log(e);
 	}
 }
-function bdayAlert(server_id, user_id) {
-	const channel_id = ServerConfig.get(server_id, "alert_channel");
+function bdayAlert(guild_id, user_id) {
+	const channel_id = GuildConfig.get(guild_id, "alert_channel");
 	if (!channel_id) return;
-	const server = client.guilds.cache.find(server => server.id == server_id);
-	if (!server) return;
-	const channel = server.channels.cache.find(channel => channel.id == channel_id);
+	const guild = client.guilds.cache.find(guild => guild.id == guild_id);
+	if (!guild) return;
+	const channel = guild.channels.cache.find(channel => channel.id == channel_id);
 	if (!channel) return;
-	const template = ServerConfig.get(server_id, "alert_message") || "Happy birthday, {user}! :partying_face:";
+	const template = GuildConfig.get(guild_id, "alert_message") || "Happy birthday, {user}! :partying_face:";
 	const message = template.replace("{user}", `<@!${user_id}>`);
 	channel.send(message);
 }
-function checkBdayAlert(server, time) {
-	const alert_channel = ServerConfig.get(server, "alert_channel");
-	const alert_message = ServerConfig.get(server, "alert_message");
+function checkBdayAlert(guild_id, time) {
+	const alert_channel = GuildConfig.get(guild_id, "alert_channel");
+	const alert_message = GuildConfig.get(guild_id, "alert_message");
 	if (!alert_channel || !alert_message) return;
-	Birthdays.getUsersByBirthday(server, time.getDate(), time.getMonth() + 1).forEach((user) => bdayAlert(server, user));
+	Birthdays.getUsersByBirthday(guild_id, time.getDate(), time.getMonth() + 1).forEach((user_id) => bdayAlert(guild_id, user_id));
 }
-function checkBdayRole(server_id, time) {
+function checkBdayRole(guild_id, time) {
 	const day = time.getDate();
 	const month = time.getMonth() + 1;
-	const role_id = ServerConfig.get(server_id, "bday_role");
-	const server = client.guilds.cache.get(server_id);
-	const bdayusers = Birthdays.getUsersByBirthday(server_id, day, month);
-	server.members.fetch().then((members) => {
+	const role_id = GuildConfig.get(guild_id, "bday_role");
+	const guild = client.guilds.cache.get(guild_id);
+	const bdayusers = Birthdays.getUsersByBirthday(guild_id, day, month);
+	guild.members.fetch().then((members) => {
 		members.forEach((member, id) => {
 			if (member.roles.cache.has(role_id) && !bdayusers.includes(member.user.id)) {
 				member.roles.remove(role_id, "Today is not their birthday.");
@@ -257,16 +257,16 @@ function checkBdayRole(server_id, time) {
 	});
 }
 function updateSchedulers() {
-	Object.values(Scheduler.schedulers).forEach(server => {
-		if (!client.guilds.cache.has(server)) {
-			Scheduler(server).destroy();
+	Object.values(Scheduler.schedulers).forEach(guild_id => {
+		if (!client.guilds.cache.has(guild_id)) {
+			Scheduler(guild_id).destroy();
 		}
 	});
-	[...client.guilds.cache.keys()].forEach(server => {
-		if (!Scheduler.schedulers.hasOwnProperty(server)) {
-			const time = ServerConfig.get(server, "alert_time");
-			const timezone = ServerConfig.get(server, "timezone");
-			Scheduler(server).init(time, timezone, checkBdayAlert, checkBdayRole);
+	[...client.guilds.cache.keys()].forEach(guild_id => {
+		if (!Scheduler.schedulers.hasOwnProperty(guild_id)) {
+			const time = GuildConfig.get(guild_id, "alert_time");
+			const timezone = GuildConfig.get(guild_id, "timezone");
+			Scheduler(guild_id).init(time, timezone, checkBdayAlert, checkBdayRole);
 		}
 	});
 }

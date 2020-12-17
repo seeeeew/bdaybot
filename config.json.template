@@ -1,7 +1,7 @@
 {
 	"token": "<your-discord-api-token>",
 	"dbpath": "./birthdays.db",
-	"servers": [
-		"<server-id>"
+	"guilds": [
+		"<guild-id>"
 	]
 }

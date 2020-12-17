@@ -3,7 +3,7 @@ const schedule = require("node-schedule");
 const schedulers = {}
 
 // TODO more sanity checks for scheduler
-function Scheduler(server_id) {
+function Scheduler(guild_id) {
 	let timeRule, timeJob, midnightRule, midnightJob;
 	function init(time, timezone, timeCommand, midnightCommand) {
 		timeRule = new schedule.RecurrenceRule();
@@ -14,10 +14,10 @@ function Scheduler(server_id) {
 		}
 		if (time) {
 			[timeRule.hour, timeRule.minute] = time.split(":").map(part => part * 1);
-			timeJob = schedule.scheduleJob(timeRule, (time) => timeCommand(server_id, time));
+			timeJob = schedule.scheduleJob(timeRule, (time) => timeCommand(guild_id, time));
 		}
 		[midnightRule.hour, midnightRule.minute] = [0, 0];
-		midnightJob = schedule.scheduleJob(midnightRule, (time) => midnightCommand(server_id, time));
+		midnightJob = schedule.scheduleJob(midnightRule, (time) => midnightCommand(guild_id, time));
 	}
 	function setTimezone(timezone) {
 		timeRule.tz = timezone;
@@ -40,7 +40,7 @@ function Scheduler(server_id) {
 	function destroy() {
 		timeJob.cancel();
 		midnightJob.cancel();
-		delete schedulers[server_id];
+		delete schedulers[guild_id];
 	}
 	return {
 		init,
@@ -50,11 +50,11 @@ function Scheduler(server_id) {
 	}
 }
 
-function getScheduler(server_id) {
-	if (!schedulers[server_id]) {
-		schedulers[server_id] = Scheduler(server_id);
+function getScheduler(guild_id) {
+	if (!schedulers[guild_id]) {
+		schedulers[guild_id] = Scheduler(guild_id);
 	}
-	return schedulers[server_id];
+	return schedulers[guild_id];
 }
 getScheduler.schedulers = schedulers;
 
