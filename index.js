@@ -177,6 +177,10 @@ function configSet(message, input) {
 				break;
 			case "timezone":
 				Scheduler.schedulers[guild_id].setTimezone(value);
+				checkBdayRole(message.guild.id);
+				break;
+			case "bday_role":
+				checkBdayRole(message.guild.id);
 				break;
 		}
 		message.channel.send(`:white_check_mark: \`${key}\` has been set.`);
@@ -192,6 +196,7 @@ function configReset(message, key) {
 				break;
 			case "timezone":
 				Scheduler.schedulers[guild_id].setTimezone(undefined);
+				checkBdayRole(message.guild.id);
 				break;
 		}
 		message.channel.send(`:white_check_mark: \`${key}\` has been reset.`);
