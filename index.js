@@ -129,7 +129,7 @@ function bdayList(message) {
 function configCmd(message, input) {
 	const guild_id = message.guild.id;
 	const admin_role = GuildConfig.get(guild_id, "admin_role");
-	if (!message.member.roles.cache.has(admin_role)) return;
+	if (!message.member.roles.cache.has(admin_role) && message.guild.owner.user.id !== message.author.id) return;
 	const [, command, args] = input.match(/^([^\s]+)(?:\s+(.*))?/);
 	switch (command) {
 		case "set":
