@@ -5,17 +5,15 @@ const schedulers = {}
 // TODO more sanity checks for scheduler
 function Scheduler(guild_id) {
 	let timeRule, timeJob, midnightRule, midnightJob;
-	function init(time, timezone, timeCommand, midnightCommand) {
+	function init(time = "00:00", timezone, timeCommand, midnightCommand) {
 		timeRule = new schedule.RecurrenceRule();
 		midnightRule = new schedule.RecurrenceRule();
 		if (timezone) {
 			timeRule.tz = timezone;
 			midnightRule.tz = timezone;
 		}
-		if (time) {
-			[timeRule.hour, timeRule.minute] = time.split(":").map(part => part * 1);
-			timeJob = schedule.scheduleJob(timeRule, (time) => timeCommand(guild_id, time));
-		}
+		[timeRule.hour, timeRule.minute] = time.split(":").map(part => part * 1);
+		timeJob = schedule.scheduleJob(timeRule, (time) => timeCommand(guild_id, time));
 		[midnightRule.hour, midnightRule.minute] = [0, 0];
 		midnightJob = schedule.scheduleJob(midnightRule, (time) => midnightCommand(guild_id, time));
 	}
@@ -25,17 +23,9 @@ function Scheduler(guild_id) {
 		midnightRule.tz = timezone;
 		midnightJob.reschedule(midnightRule);
 	}
-	function setTime(time) {
-		if (time) {
-			[timeRule.hour, timeRule.minute] = time.split(":").map(part => part * 1);
-			timeJob.reschedule(timeRule);
-		} else {
-			[timeRule.hour, timeRule.minute] = [];
-			if (timeJob) {
-				timeJob.cancel();
-				timeJob = undefined;
-			}
-		}
+	function setTime(time = "00:00") {
+		[timeRule.hour, timeRule.minute] = time.split(":").map(part => part * 1);
+		timeJob.reschedule(timeRule);
 	}
 	function destroy() {
 		timeJob.cancel();
