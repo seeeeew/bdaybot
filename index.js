@@ -247,6 +247,7 @@ function checkBdayRole(guild_id, time) {
 	const role_id = GuildConfig.get(guild_id, "bday_role");
 	if (!role_id) return;
 	const guild = client.guilds.cache.get(guild_id);
+	if (!guild.roles.cache.has(role_id)) return;
 	const bdayusers = Birthdays.getUsersByBirthday(guild_id, day, month);
 	guild.members.fetch().then((members) => {
 		members.forEach((member, id) => {
