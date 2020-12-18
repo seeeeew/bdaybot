@@ -267,7 +267,7 @@ function checkBdayRole(guild_id, time) {
 	});
 }
 function updateSchedulers() {
-	Object.values(Scheduler.schedulers).forEach(guild_id => {
+	Object.keys(Scheduler.schedulers).forEach(guild_id => {
 		if (!client.guilds.cache.has(guild_id)) {
 			Scheduler(guild_id).destroy();
 		}
