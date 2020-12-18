@@ -158,7 +158,7 @@ function configSet(message, input) {
 			// TODO check if channel exists
 			break;
 		case "alert_time":
-			const [match, hour, minute] = value.match(/$(\d{2}):(\d{2})$/);
+			const [match, hour, minute] = value.match(/^(\d{2}):(\d{2})$/);
 			if (!match || hour > 23 || minute > 59) return;
 			break;
 		case "timezone":
