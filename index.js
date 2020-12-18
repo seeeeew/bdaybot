@@ -157,6 +157,7 @@ function configShow(message) {
 		command_channel: "channel in which the bot will react to commands (link the channel)\nleave unset to allow all channels",
 		alert_channel: "channel in which the bot will post birthday alerts (link the channel)\nleave unset to disable this feature",
 		alert_message: "template for the birthday alert message (`{user}` will be replaced with the user link)\nuses default message if unset",
+		alert_embed: "post the birthday alert as an embed to prevent pinging the birthday person (true/false, default: false)",
 		alert_time: "time at which the bot posts the birthday alert (format: HH:MM)\ndefaults to midnight if unset",
 		timezone: "time zone to be used for this server (full name from the [IANA tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), e. g. `Europe/Berlin`)\ndefaults to bot server time zone if unset",
 		bday_role: "role that will be given to the birthday person for the duration of their birthday (link the role)\nleave unset to disable this feature"
@@ -169,6 +170,7 @@ function configShow(message) {
 		command_channel: values.command_channel ? `<#${values.command_channel}>` : "*(not set)*",
 		alert_channel: values.alert_channel ? `<#${values.alert_channel}>` : "*(not set)*",
 		alert_message: values.alert_message ? "`" + values.alert_message + "`" : "*(not set)*",
+		alert_embed: values.alert_embed ? "`" + values.alert_embed + "`" : "*(not set)*",
 		alert_time: values.alert_time ? "`" + values.alert_time + "`" : "*(not set)*",
 		timezone: values.timezone ? "`" + values.timezone + "`" : "*(not set)*",
 		bday_role: values.bday_role ? `<@&${values.bday_role}>` : "*(not set)*"
@@ -232,9 +234,14 @@ function bdayAlert(guild_id, user_id) {
 	if (!channel) return;
 	const template = GuildConfig.get(guild_id, "alert_message") || "Happy birthday, {user}! :partying_face:";
 	const message = template.replace("{user}", `<@!${user_id}>`);
-	channel.send(message);
+	if (GuildConfig.get(guild_id, "alert_embed")) {
+		channel.send({embed: {description: message}});
+	} else {
+		channel.send(message);
+	}
 }
 function checkBdayAlert(guild_id, time) {
+	if (!time) time = new Date(new Date().toLocaleString("en-US", {timeZone: GuildConfig.get(guild_id, "timezone")}));
 	const alert_channel = GuildConfig.get(guild_id, "alert_channel");
 	const alert_message = GuildConfig.get(guild_id, "alert_message");
 	if (!alert_channel || !alert_message) return;
