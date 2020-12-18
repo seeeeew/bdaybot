@@ -152,10 +152,10 @@ function configReset(message, key) {
 	if (changes) {
 		switch (key) {
 			case "alert_time":
-				Scheduler.schedulers(guild_id).setTime(undefined);
+				Scheduler.schedulers[guild_id].setTime(undefined);
 				break;
 			case "timezone":
-				Scheduler.schedulers(guild_id).setTimeZone(undefined);
+				Scheduler.schedulers[guild_id].setTimezone(undefined);
 				break;
 		}
 		message.channel.send(`:white_check_mark: \`${key}\` has been reset.`);
