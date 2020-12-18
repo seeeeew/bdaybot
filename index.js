@@ -7,7 +7,7 @@ const packageinfo = require("./package.json");
 
 function help(message) {
 	const guild_id = message.guild.id;
-	const prefix = GuildConfig.get(guild_id, "prefix") || `@${client.user.username}#${client.user.discriminator} `;
+	const prefix = GuildConfig.get(guild_id, "prefix") || `@${client.user.tag} `;
 	const commands = [
 		["User Commands", [
 			["bday set <MM-DD>", "set your birthday (without year)"],
@@ -152,14 +152,14 @@ function configReset(message, input) {
 function configShow(message) {
 	const guild_id = message.guild.id;
 	const descriptions = {
-		prefix: "command prefix this bot should react to",
-		admin_role: "role required to use admin commands",
-		command_channel: "channel in which the bot will react to commands",
-		alert_channel: "channel in which the bot will post birthday alerts",
-		alert_message: "template for the birthday alert message (`{user}` will be replaced with the user link)",
-		alert_time: "time at which the bot posts the birthday alert (format: HH:MM)",
-		timezone: "time zone to be used for this server",
-		bday_role: "role that will be given to the birthday person for the duration of their birthday"
+		prefix: "command prefix this bot should react to (e. g. `!` or `bb!`)\n`@" + client.user.tag + " ` always works, even if this is unset",
+		admin_role: "role required to use admin commands (link the role)\nserver owner is always allowed, even if this is unset",
+		command_channel: "channel in which the bot will react to commands (link the channel)\nleave unset to allow all channels",
+		alert_channel: "channel in which the bot will post birthday alerts (link the channel)\nleave unset to disable this feature",
+		alert_message: "template for the birthday alert message (`{user}` will be replaced with the user link)\nuses default message if unset",
+		alert_time: "time at which the bot posts the birthday alert (format: HH:MM)\ndefaults to midnight if unset",
+		timezone: "time zone to be used for this server (full name from the [IANA tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), e. g. `Europe/Berlin`)\ndefaults to bot server time zone if unset",
+		bday_role: "role that will be given to the birthday person for the duration of their birthday (link the role)\nleave unset to disable this feature"
 	};
 	const keys = Object.keys(descriptions);
 	const values = Object.fromEntries(Object.keys(descriptions).map(key => [key, GuildConfig.get(guild_id, key)]));
