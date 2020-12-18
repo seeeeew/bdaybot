@@ -146,8 +146,20 @@ function configCmd(message, input) {
 function configSet(message, input) {
 	// TODO implement configSet
 }
-function configReset(message, input) {
-	// TODO implement configReset
+function configReset(message, key) {
+	const guild_id = message.guild.id;
+	const changes = GuildConfig.set(guild_id, key, undefined);
+	if (changes) {
+		switch (key) {
+			case "alert_time":
+				Scheduler.schedulers(guild_id).setTime(undefined);
+				break;
+			case "timezone":
+				Scheduler.schedulers(guild_id).setTimeZone(undefined);
+				break;
+		}
+		message.channel.send(`:white_check_mark: \`${key}\` has been reset.`);
+	}
 }
 function configShow(message) {
 	const guild_id = message.guild.id;

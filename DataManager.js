@@ -19,12 +19,18 @@ const GuildConfig = (function() {
 	}
 	function set(guild_id, key, value) {
 		if (cache[guild_id] === undefined) cache[guild_id] = {};
-		if (db.prepare("SELECT 1 FROM config WHERE (guild_id, key) = (?, ?);").get([guild_id, key])) {
-			db.prepare("UPDATE config SET value = ? WHERE (guild_id, key) = (?, ?);").run([value, guild_id, key]);
+		let changes = 0;
+		if (value !== undefined) {
+			if (db.prepare("SELECT 1 FROM config WHERE (guild_id, key) = (?, ?);").get([guild_id, key])) {
+				changes = db.prepare("UPDATE config SET value = ? WHERE (guild_id, key) = (?, ?);").run([value, guild_id, key]);
+			} else {
+				changes = db.prepare("INSERT INTO config (guild_id, key, value) VALUES (?, ?, ?);").run([guild_id, key, value]);
+			}
 		} else {
-			db.prepare("INSERT INTO config (guild_id, key, value) VALUES (?, ?, ?);").run([guild_id, key, value]);
+			changes = db.prepare("DELETE FROM config WHERE (guild_id, key) = (?, ?);").run([guild_id, key]);
 		}
-		cache[guild_id][key] = value;
+		if (changes) cache[guild_id][key] = value;
+		return changes;
 	}
 	return {
 		get,
