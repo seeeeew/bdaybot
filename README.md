@@ -32,7 +32,8 @@ Default prefix is `@<bot-account> `. Successfull commands always give a response
 
 ### Admin Commands:
 
-* `<prefix>config show` – shows current configuration with descriptions
+* `<prefix>config show` – shows current configuration
+* `<prefix>config help` – shows current configuration with descriptions
 * `<prefix>config set <key> <value>` – set `<key>` to `<value>`
 * `<prefix>config reset <key>` – reset `<key>` to the default value
 

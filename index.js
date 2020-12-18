@@ -17,7 +17,8 @@ function help(message) {
 			["help", "print help and general info"]
 		]],
 		["Admin Commands", [
-			["config show", "shows current configuration with descriptions"],
+			["config show", "shows current configuration"],
+			["config help", "shows current configuration with descriptions"],
 			["config set <key> <value>", "set `<key>` to `<value>`"],
 			["config reset <key>", "reset `<key>` to the default value"]
 		]]
@@ -139,7 +140,10 @@ function configCmd(message, input) {
 			configReset(message, args);
 			break;
 		case "show":
-			configShow(message);
+			configShow(message, false);
+			break;
+		case "help":
+			configShow(message, true);
 			break;
 	}
 }
@@ -202,7 +206,7 @@ function configReset(message, key) {
 		message.channel.send(`:white_check_mark: \`${key}\` has been reset.`);
 	}
 }
-function configShow(message) {
+function configShow(message, full = true) {
 	const guild_id = message.guild.id;
 	const descriptions = {
 		prefix: "command prefix this bot should react to (e. g. `!` or `bb!`)\n`@" + client.user.tag + " ` always works, even if this is unset",
@@ -228,7 +232,7 @@ function configShow(message) {
 		timezone: values.timezone ? "`" + values.timezone + "`" : "*(not set)*",
 		bday_role: values.bday_role ? `<@&${values.bday_role}>` : "*(not set)*"
 	};
-	const fields = keys.map(key => {return {name: key, value: `${fieldvalues[key]}\n${descriptions[key]}`}});
+	const fields = keys.map(key => {return {name: key, value: fieldvalues[key] + (full ? "\n" + descriptions[key] : "")}});
 	const avatarURL = client.user.avatarURL();
 	const nickname = message.guild.member(client.user).displayName;
 	const embed = {
