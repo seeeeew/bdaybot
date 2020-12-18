@@ -81,7 +81,7 @@ function bdayRemove(message) {
 function bdayList(message) {
 	const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 	const guild_id = message.guild.id;
-	const currentyear = new Date().getFullYear();
+	const currentyear = new Date(new Date().toLocaleString("en-US", {timeZone: GuildConfig.get(guild_id, "timezone")})).getFullYear();
 	const rows = Birthdays.getBirthdays(guild_id);
 	message.guild.members.fetch({user: rows.map(row => row.user_id)}).then(() => {
 		const birthdays = rows.map(row => {
