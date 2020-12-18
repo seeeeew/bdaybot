@@ -144,7 +144,43 @@ function configCmd(message, input) {
 	}
 }
 function configSet(message, input) {
-	// TODO implement configSet
+	const guild_id = message.guild.id;
+	let [, key, value] = input.match(/^([^\s]+)(?:\s+(.*))?/);
+	switch (key) {
+		case "admin_role":
+		case "bday_role":
+			value = value.replace(/^<@&(\d+)>$/, "$1");
+			// TODO check if role exists
+			break;
+		case "command_channel":
+		case "alert_channel":
+			value = value.replace(/^<#(\d+)>$/, "$1");
+			// TODO check if channel exists
+			break;
+		case "alert_time":
+			const [match, hour, minute] = value.match(/$(\d{2}):(\d{2})$/);
+			if (!match || hour > 23 || minute > 59) return;
+			break;
+		case "timezone":
+			if (!value.match(/^[a-z_]+\/[a-z_]+$/i)) return;
+			// TODO check if time zone exists
+			break;
+		case "alert_embed":
+			if (!value.match(/^(?:true|false)$/)) return;
+			break;
+	}
+	const changes = GuildConfig.set(guild_id, key, value);
+	if (changes) {
+		switch (key) {
+			case "alert_time":
+				Scheduler.schedulers[guild_id].setTime(value);
+				break;
+			case "timezone":
+				Scheduler.schedulers[guild_id].setTimezone(value);
+				break;
+		}
+		message.channel.send(`:white_check_mark: \`${key}\` has been set.`);
+	}
 }
 function configReset(message, key) {
 	const guild_id = message.guild.id;
