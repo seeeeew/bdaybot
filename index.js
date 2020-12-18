@@ -69,13 +69,13 @@ function bdaySet(message, input) {
 	Birthdays.setUserBirthday(message.guild.id, message.author.id, day, month, year);
 	const datestring = Intl.DateTimeFormat("en-GB", {day: "numeric", month: "long", year: year ? "numeric" : undefined}).format(new Date(checkstring));
 	message.channel.send(`:white_check_mark: Your birthday was set to **${datestring}**.`);
-	// TODO check if birthday is today, add role if necessary
+	checkBdayRole(message.guild.id);
 }
 function bdayRemove(message) {
 	const changes = Birthdays.removeUserBirthday(message.guild.id, message.author.id);
 	if (changes) {
-		// TODO remove birthday role if necessary
 		message.channel.send(`:x: Your birthday was removed.`);
+		checkBdayRole(message.guild.id);
 	}
 }
 function bdayList(message) {
@@ -241,9 +241,11 @@ function checkBdayAlert(guild_id, time) {
 	Birthdays.getUsersByBirthday(guild_id, time.getDate(), time.getMonth() + 1).forEach((user_id) => bdayAlert(guild_id, user_id));
 }
 function checkBdayRole(guild_id, time) {
+	if (!time) time = new Date(new Date().toLocaleString("en-US", {timeZone: GuildConfig.get(guild_id, "timezone")}));
 	const day = time.getDate();
 	const month = time.getMonth() + 1;
 	const role_id = GuildConfig.get(guild_id, "bday_role");
+	if (!role_id) return;
 	const guild = client.guilds.cache.get(guild_id);
 	const bdayusers = Birthdays.getUsersByBirthday(guild_id, day, month);
 	guild.members.fetch().then((members) => {
@@ -273,6 +275,7 @@ function updateSchedulers() {
 function init() {
 	client.once("ready", () => {
 		updateSchedulers();
+		[...client.guilds.cache.keys()].forEach(guild_id => checkBdayRole(guild_id));
 		client.on("message", messageHandler);
 		console.log("Ready!");
 	});
