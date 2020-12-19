@@ -45,8 +45,8 @@ Available configuration options:
 command prefix this bot should react to (e. g. `!` or `bb!`)  
 `@<bot-account> ` always works, even if this is unset
 
-* **admin_role**  
-role required to use admin commands (link the role)  
+* **admin_roles**  
+roles allowed to use admin commands (links or ids)  
 server owner is always allowed, even if this is unset
 
 * **command_channel**  

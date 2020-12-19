@@ -129,8 +129,8 @@ function bdayList(message) {
 }
 function configCmd(message, input) {
 	const guild_id = message.guild.id;
-	const admin_role = GuildConfig.get(guild_id, "admin_role");
-	if (!message.member.roles.cache.has(admin_role) && message.guild.owner.user.id !== message.author.id) return;
+	const admin_roles = GuildConfig.get(guild_id, "admin_roles").split(",");
+	if (!message.member.roles.cache.filter(role => admin_roles.includes(role.id)).length && message.guild.owner.user.id !== message.author.id) return;
 	const [, command, args] = input.match(/^([^\s]+)(?:\s+(.*))?/);
 	switch (command) {
 		case "set":
@@ -151,7 +151,10 @@ function configSet(message, input) {
 	const guild_id = message.guild.id;
 	let [, key, value] = input.match(/^([^\s]+)(?:\s+(.*))?/);
 	switch (key) {
-		case "admin_role":
+		case "admin_roles":
+			value = value.split(" ").map(value => value.replace(/^<@&(\d+)>$/, "$1")).join(",");
+			// TODO check if roles exist
+			break;
 		case "bday_role":
 			value = value.replace(/^<@&(\d+)>$/, "$1");
 			// TODO check if role exists
@@ -210,7 +213,7 @@ function configShow(message, full = true) {
 	const guild_id = message.guild.id;
 	const descriptions = {
 		prefix: "command prefix this bot should react to (e. g. `!` or `bb!`)\n`@" + client.user.tag + " ` always works, even if this is unset",
-		admin_role: "role required to use admin commands (link the role)\nserver owner is always allowed, even if this is unset",
+		admin_roles: "roles allowed to use admin commands (links or ids)\nserver owner is always allowed, even if this is unset",
 		command_channel: "channel in which the bot will react to commands (link the channel)\nleave unset to allow all channels",
 		alert_channel: "channel in which the bot will post birthday alerts (link the channel)\nleave unset to disable this feature",
 		alert_message: "template for the birthday alert message (`{user}` will be replaced with the user link)\nuses default message if unset",
@@ -223,7 +226,7 @@ function configShow(message, full = true) {
 	const values = Object.fromEntries(Object.keys(descriptions).map(key => [key, GuildConfig.get(guild_id, key)]));
 	const fieldvalues = {
 		prefix: values.prefix ? "`" + values.prefix + "`" : "*(not set)*",
-		admin_role: values.admin_role ? `<@&${values.admin_role}>` : "*(not set)*",
+		admin_roles: values.admin_roles ? values.admin_roles.split(",").map(role_id => `<@&${role_id}>`).join(" ") : "*(not set)*",
 		command_channel: values.command_channel ? `<#${values.command_channel}>` : "*(not set)*",
 		alert_channel: values.alert_channel ? `<#${values.alert_channel}>` : "*(not set)*",
 		alert_message: values.alert_message ? "`" + values.alert_message + "`" : "*(not set)*",
