@@ -330,7 +330,7 @@ function updateSchedulers() {
 		}
 	});
 	[...client.guilds.cache.keys()].forEach(guild_id => {
-		if (!Scheduler.schedulers.hasOwnProperty(guild_id) && (!config.guilds || !config.guilds.length || config.guilds.includes(guild_id))) {
+		if (!Scheduler.schedulers.hasOwnProperty(guild_id) && (!config.guilds || config.guilds.includes(guild_id))) {
 			const time = GuildConfig.get(guild_id, "alert_time");
 			const timezone = GuildConfig.get(guild_id, "timezone");
 			Scheduler(guild_id).init(time, timezone, checkBdayAlert, checkBdayRole);
@@ -340,8 +340,18 @@ function updateSchedulers() {
 function init() {
 	client.once("ready", () => {
 		updateSchedulers();
+		[...client.guilds.cache.values()].forEach(guild => {
+			if (config.guilds && !config.guilds.includes(guild.id)) {
+				guild.leave();
+			}
+		});
 		[...client.guilds.cache.keys()].forEach(guild_id => checkBdayRole(guild_id));
-		client.on("guildCreate", updateSchedulers);
+		client.on("guildCreate", guild => {
+			if (config.guilds && !config.guilds.includes(guild.id)) {
+				guild.leave();
+			}
+			updateSchedulers();
+		});
 		client.on("guildDelete", updateSchedulers);
 		client.on("message", messageHandler);
 		console.log("Ready!");
