@@ -341,6 +341,8 @@ function init() {
 	client.once("ready", () => {
 		updateSchedulers();
 		[...client.guilds.cache.keys()].forEach(guild_id => checkBdayRole(guild_id));
+		client.on("guildCreate", updateSchedulers);
+		client.on("guildDelete", updateSchedulers);
 		client.on("message", messageHandler);
 		console.log("Ready!");
 	});
