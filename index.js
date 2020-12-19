@@ -330,7 +330,7 @@ function updateSchedulers() {
 		}
 	});
 	[...client.guilds.cache.keys()].forEach(guild_id => {
-		if (!Scheduler.schedulers.hasOwnProperty(guild_id)) {
+		if (!Scheduler.schedulers.hasOwnProperty(guild_id) && (!config.guilds || !config.guilds.length || config.guilds.includes(guild_id))) {
 			const time = GuildConfig.get(guild_id, "alert_time");
 			const timezone = GuildConfig.get(guild_id, "timezone");
 			Scheduler(guild_id).init(time, timezone, checkBdayAlert, checkBdayRole);
