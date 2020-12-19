@@ -49,8 +49,8 @@ command prefix this bot should react to (e. g. `!` or `bb!`)
 roles allowed to use admin commands (links or ids)  
 server owner is always allowed, even if this is unset
 
-* **command_channel**  
-channel in which the bot will react to commands (link the channel)  
+* **command_channels**  
+channels in which the bot will react to commands (links or ids)  
 leave unset to allow all channels
 
 * **alert_channel**  

@@ -159,7 +159,10 @@ function configSet(message, input) {
 			value = value.replace(/^<@&(\d+)>$/, "$1");
 			// TODO check if role exists
 			break;
-		case "command_channel":
+		case "command_channels":
+			value = value.split(" ").map(value => value.replace(/^<#(\d+)>$/, "$1")).join(",");
+			// TODO check if channels exist
+			break;
 		case "alert_channel":
 			value = value.replace(/^<#(\d+)>$/, "$1");
 			// TODO check if channel exists
@@ -214,7 +217,7 @@ function configShow(message, full = true) {
 	const descriptions = {
 		prefix: "command prefix this bot should react to (e. g. `!` or `bb!`)\n`@" + client.user.tag + " ` always works, even if this is unset",
 		admin_roles: "roles allowed to use admin commands (links or ids)\nserver owner is always allowed, even if this is unset",
-		command_channel: "channel in which the bot will react to commands (link the channel)\nleave unset to allow all channels",
+		command_channels: "channels in which the bot will react to commands (links or ids)\nleave unset to allow all channels",
 		alert_channel: "channel in which the bot will post birthday alerts (link the channel)\nleave unset to disable this feature",
 		alert_message: "template for the birthday alert message (`{user}` will be replaced with the user link)\nuses default message if unset",
 		alert_message_age: "template for the birthday alert message if the user's age is available (`{user}`, `{age}` and `{ageth}` will be replaced)\nuses default message without age if unset",
@@ -228,7 +231,7 @@ function configShow(message, full = true) {
 	const fieldvalues = {
 		prefix: values.prefix ? "`" + values.prefix + "`" : "*(not set)*",
 		admin_roles: values.admin_roles ? values.admin_roles.split(",").map(role_id => `<@&${role_id}>`).join(" ") : "*(not set)*",
-		command_channel: values.command_channel ? `<#${values.command_channel}>` : "*(not set)*",
+		command_channels: values.command_channels ? values.command_channels.split(",").map(channel_id => `<#${channel_id}>`).join(" ") : "*(not set)*",
 		alert_channel: values.alert_channel ? `<#${values.alert_channel}>` : "*(not set)*",
 		alert_message: values.alert_message ? "`" + values.alert_message + "`" : "*(not set)*",
 		alert_message_age: values.alert_message_age ? "`" + values.alert_message_age + "`" : "*(not set)*",
@@ -274,8 +277,8 @@ function messageHandler(message) {
 		if (!message.guild) return;
 		const guild_id = message.guild.id;
 		if (!config.guilds.includes(guild_id)) return;
-		const channel = GuildConfig.get(guild_id, "command_channel");
-		if (!channel || channel != message.channel.id) return;
+		const channels = GuildConfig.get(guild_id, "command_channels").split(",");
+		if (!channels || !channels.includes(message.channel.id)) return;
 		const guildprefix = GuildConfig.get(guild_id, "prefix");
 		const defaultprefix = `<@!${client.user.id}> `;
 		if (message.content.startsWith(guildprefix)) {
