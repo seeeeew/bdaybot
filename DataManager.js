@@ -40,7 +40,7 @@ const GuildConfig = (function() {
 
 const Birthdays = (function() {
 	function getUsersByBirthday(guild_id, day, month) {
-		return db.prepare("SELECT user_id FROM birthdays WHERE (guild_id, day, month) = (?, ?, ?);").all([guild_id, day, month]).map(row => row.user_id);
+		return db.prepare("SELECT user_id, year FROM birthdays WHERE (guild_id, day, month) = (?, ?, ?);").all([guild_id, day, month]);
 	}
 	function setUserBirthday(guild_id, user_id, day, month, year) {
 		if (db.prepare("SELECT 1 FROM birthdays WHERE (guild_id, user_id) = (?, ?);").get([guild_id, user_id])) {

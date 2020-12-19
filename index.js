@@ -217,6 +217,7 @@ function configShow(message, full = true) {
 		command_channel: "channel in which the bot will react to commands (link the channel)\nleave unset to allow all channels",
 		alert_channel: "channel in which the bot will post birthday alerts (link the channel)\nleave unset to disable this feature",
 		alert_message: "template for the birthday alert message (`{user}` will be replaced with the user link)\nuses default message if unset",
+		alert_message_age: "template for the birthday alert message if the user's age is available (`{user}`, `{age}` and `{ageth}` will be replaced)\nuses default message without age if unset",
 		alert_embed: "post the birthday alert as an embed to prevent pinging the birthday person (true/false, default: false)",
 		alert_time: "time at which the bot posts the birthday alert (format: HH:MM)\ndefaults to midnight if unset",
 		timezone: "time zone to be used for this server (full name from the [IANA tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), e. g. `Europe/Berlin`)\ndefaults to bot server time zone if unset",
@@ -230,6 +231,7 @@ function configShow(message, full = true) {
 		command_channel: values.command_channel ? `<#${values.command_channel}>` : "*(not set)*",
 		alert_channel: values.alert_channel ? `<#${values.alert_channel}>` : "*(not set)*",
 		alert_message: values.alert_message ? "`" + values.alert_message + "`" : "*(not set)*",
+		alert_message_age: values.alert_message_age ? "`" + values.alert_message_age + "`" : "*(not set)*",
 		alert_embed: values.alert_embed ? "`" + values.alert_embed + "`" : "*(not set)*",
 		alert_time: values.alert_time ? "`" + values.alert_time + "`" : "*(not set)*",
 		timezone: values.timezone ? "`" + values.timezone + "`" : "*(not set)*",
@@ -285,15 +287,24 @@ function messageHandler(message) {
 		console.log(e);
 	}
 }
-function bdayAlert(guild_id, user_id) {
+function bdayAlert(guild_id, user_id, year) {
+	const currentyear = new Date(new Date().toLocaleString("en-US", {timeZone: GuildConfig.get(guild_id, "timezone")})).getFullYear();
 	const channel_id = GuildConfig.get(guild_id, "alert_channel");
 	if (!channel_id) return;
 	const guild = client.guilds.cache.find(guild => guild.id == guild_id);
 	if (!guild) return;
 	const channel = guild.channels.cache.find(channel => channel.id == channel_id);
 	if (!channel) return;
-	const template = GuildConfig.get(guild_id, "alert_message") || "Happy birthday, {user}! :partying_face:";
-	const message = template.replace("{user}", `<@!${user_id}>`);
+	const tpl_noage = GuildConfig.get(guild_id, "alert_message") || "Happy birthday, {user}! :partying_face:";
+	const tpl_age = GuildConfig.get(guild_id, "alert_message_age") || tpl_noage;
+	let message;
+	if (year) {
+		const age = currentyear - year;
+		const ageth = age + ["st", "nd", "rd"][((age + 90) % 100 - 10) % 10 - 1] || "th";
+		message = tpl_age.replace("{user}", `<@!${user_id}>`).replace("{age}", age).replace("{ageth}", ageth);
+	} else {
+		message = tpl_noage.replace("{user}", `<@!${user_id}>`);
+	}
 	if (GuildConfig.get(guild_id, "alert_embed")) {
 		channel.send({embed: {description: message}});
 	} else {
@@ -303,9 +314,8 @@ function bdayAlert(guild_id, user_id) {
 function checkBdayAlert(guild_id, time) {
 	if (!time) time = new Date(new Date().toLocaleString("en-US", {timeZone: GuildConfig.get(guild_id, "timezone")}));
 	const alert_channel = GuildConfig.get(guild_id, "alert_channel");
-	const alert_message = GuildConfig.get(guild_id, "alert_message");
-	if (!alert_channel || !alert_message) return;
-	Birthdays.getUsersByBirthday(guild_id, time.getDate(), time.getMonth() + 1).forEach((user_id) => bdayAlert(guild_id, user_id));
+	if (!alert_channel) return;
+	Birthdays.getUsersByBirthday(guild_id, time.getDate(), time.getMonth() + 1).forEach(row => bdayAlert(guild_id, row.user_id, row.year));
 }
 function checkBdayRole(guild_id, time) {
 	if (!time) time = new Date(new Date().toLocaleString("en-US", {timeZone: GuildConfig.get(guild_id, "timezone")}));
@@ -315,7 +325,7 @@ function checkBdayRole(guild_id, time) {
 	if (!role_id) return;
 	const guild = client.guilds.cache.get(guild_id);
 	if (!guild.roles.cache.has(role_id)) return;
-	const bdayusers = Birthdays.getUsersByBirthday(guild_id, day, month);
+	const bdayusers = Birthdays.getUsersByBirthday(guild_id, day, month).map(row => row.user_id);
 	guild.members.fetch().then((members) => {
 		members.forEach((member, id) => {
 			if (member.roles.cache.has(role_id) && !bdayusers.includes(member.user.id)) {

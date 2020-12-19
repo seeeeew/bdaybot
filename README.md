@@ -61,6 +61,10 @@ leave unset to disable this feature
 template for the birthday alert message (`{user}` will be replaced with the user link)  
 uses default message if unset
 
+* **alert_message_age**  
+template for the birthday alert message if the user's age is available (`{user}`, `{age}` and `{ageth}` will be replaced)  
+uses default message without age if unset
+
 * **alert_embed**  
 post the birthday alert as an embed to prevent pinging the birthday person (true/false, default: false)  
 
