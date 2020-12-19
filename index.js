@@ -178,6 +178,13 @@ function configSet(message, input) {
 		case "alert_embed":
 			if (!value.match(/^(?:true|false)$/)) return;
 			break;
+		case "prefix":
+		case "alert_message":
+		case "alert_message_age":
+		case "alert_embed":
+			break;
+		default:
+			return;
 	}
 	const changes = GuildConfig.set(guild_id, key, value);
 	if (changes) {
