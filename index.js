@@ -315,7 +315,7 @@ function bdayAlert(guild_id, user_id, year) {
 	} else {
 		message = tpl_noage.replace("{user}", `<@!${user_id}>`);
 	}
-	if (GuildConfig.get(guild_id, "alert_embed")) {
+	if (GuildConfig.get(guild_id, "alert_embed") === "true") {
 		channel.send({embed: {description: message}});
 	} else {
 		channel.send(message);
