@@ -13,9 +13,21 @@ function Scheduler(guild_id) {
 			midnightRule.tz = timezone;
 		}
 		[timeRule.hour, timeRule.minute] = time.split(":").map(part => part * 1);
-		timeJob = schedule.scheduleJob(timeRule, (time) => timeCommand(guild_id, time));
+		timeJob = schedule.scheduleJob(timeRule, (time) => {
+			try {
+				timeCommand(guild_id, time);
+			} catch(e) {
+				console.error(guild_id, time, e);
+			}
+		});
 		[midnightRule.hour, midnightRule.minute] = [0, 0];
-		midnightJob = schedule.scheduleJob(midnightRule, (time) => midnightCommand(guild_id, time));
+		midnightJob = schedule.scheduleJob(midnightRule, (time) => {
+			try {
+				midnightCommand(guild_id, time);
+			} catch(e) {
+				console.error(guild_id, time, e);
+			}
+		});
 	}
 	function setTimezone(timezone) {
 		timeRule.tz = timezone;
