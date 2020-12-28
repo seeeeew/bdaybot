@@ -294,7 +294,7 @@ function messageHandler(message) {
 			parseCommand(message, message.content.slice(defaultprefix.length));
 		}
 	} catch(e) {
-		console.log(e);
+		console.error(message.content, e);
 	}
 }
 function bdayAlert(guild_id, user_id, year) {
