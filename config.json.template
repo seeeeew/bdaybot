@@ -3,5 +3,6 @@
 	"dbpath": "./birthdays.db",
 	"guilds": [
 		"<guild-id>"
-	]
+	],
+	"helpmessage": "Successful commands always give a response.\nSource code available on [GitHub](https://github.com/seeeeew/bdaybot)."
 }

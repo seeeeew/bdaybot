@@ -34,7 +34,7 @@ function help(message) {
 		thumbnail: {
 			url: avatarURL
 		},
-		description: `A successfull command always gives a response.\nIn case of emergency poke <@!466033810929221632>.\nSource available on [GitHub](${packageinfo.homepage}).`,
+		description: config.helpmessage || `Successful commands always give a response.\nSource code available on [GitHub](${packageinfo.homepage}).`,
 		fields,
 		footer: {
 			text: `${packageinfo.name} v${packageinfo.version}`,
