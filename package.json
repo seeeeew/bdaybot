@@ -1,6 +1,6 @@
 {
   "name": "bdaybot",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "birthday bot for the discord server of the Guild Wars 2 guild The Arctic [Arc]",
   "main": "index.js",
   "scripts": {
