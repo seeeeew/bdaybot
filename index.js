@@ -135,9 +135,12 @@ function bdayNext(message) {
 	const num = config.nextbdays || 3;
 	const guild_id = message.guild.id;
 	const currentdate = new Date(new Date().toLocaleString("en-US", {timeZone: GuildConfig.get(guild_id, "timezone")}));
+	const [alert_hour, alert_minute] = (GuildConfig.get(guild_id, "alert_time") || "00:00").split(":").map(num => num * 1);
+	const currenthour = currentdate.getHours();
+	const currentminute = currentdate.getMinutes();
 	const currentyear = currentdate.getFullYear();
 	const currentmonth = currentdate.getMonth() + 1;
-	const currentday = currentdate.getDate();
+	const currentday = currentdate.getDate() + (currenthour > alert_hour || (currenthour == alert_hour && currentminute > alert_minute));
 	const rows = Birthdays.getBirthdays(guild_id);
 	message.guild.members.fetch({user: rows.map(row => row.user_id)}).then(() => {
 		let birthdays = rows.map(row => {
@@ -153,8 +156,8 @@ function bdayNext(message) {
 			return a.month != b.month ? a.month - b.month : (a.day != b.day ? a.day - b.day : a.name.localeCompare(b.name));
 		});
 		birthdays = [
-			...birthdays.filter(row => row.month > currentmonth || (row.month == currentmonth && row.day > currentday)),
-			...birthdays.filter(row => row.month < currentmonth || (row.month == currentmonth && row.day <= currentday)).map(row => {row = {...row}; row.age++; return row;})
+			...birthdays.filter(row => row.month > currentmonth || (row.month == currentmonth && row.day >= currentday)),
+			...birthdays.filter(row => row.month < currentmonth || (row.month == currentmonth && row.day < currentday)).map(row => {row = {...row}; row.age++; return row;})
 		];
 		if (birthdays.length > num) {
 			birthdays = birthdays.filter((row, index) => index < num ? true : (row.day == birthdays[num - 1].day && row.month == birthdays[num - 1].month));
