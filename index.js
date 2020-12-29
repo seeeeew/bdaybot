@@ -75,7 +75,7 @@ function bdaySet(message, input) {
 function bdayRemove(message) {
 	const changes = Birthdays.removeUserBirthday(message.guild.id, message.author.id);
 	if (changes) {
-		message.channel.send(`:x: Your birthday was removed.`);
+		message.channel.send(`:white_check_mark: Your birthday was removed.`);
 		checkBdayRole(message.guild.id);
 	}
 }
