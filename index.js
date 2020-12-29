@@ -154,7 +154,7 @@ function bdayNext(message) {
 		});
 		birthdays = [
 			...birthdays.filter(row => row.month > currentmonth || (row.month == currentmonth && row.day > currentday)),
-			...birthdays.filter(row => row.month <= currentmonth || (row.month == currentmonth && row.day <= currentday)).map(row => {row = {...row}; row.age++; return row;})
+			...birthdays.filter(row => row.month < currentmonth || (row.month == currentmonth && row.day <= currentday)).map(row => {row = {...row}; row.age++; return row;})
 		];
 		if (birthdays.length > num) {
 			birthdays = birthdays.filter((row, index) => index < num ? true : (row.day == birthdays[num - 1].day && row.month == birthdays[num - 1].month));
