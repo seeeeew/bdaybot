@@ -14,6 +14,7 @@ function help(message) {
 			["bday set <YYYY-MM-DD>", "set your birthday (with year)"],
 			["bday remove", "remove your birthday"],
 			["bday list", "list all birthdays"],
+			["bday next", `show the next ${config.nextbdays || 3} upcoming birthdays`],
 			["help", "print help and general info"]
 		]],
 		["Admin Commands", [
@@ -54,6 +55,9 @@ function bdayCmd(message, input) {
 			break;
 		case "list":
 			bdayList(message);
+			break;
+		case "next":
+			bdayNext(message);
 			break;
 	}
 }
@@ -119,6 +123,53 @@ function bdayList(message) {
 			title: "Birthday List",
 			description: `Birthdays for **${message.guild.name}** in **${currentyear}**:`,
 			fields,
+			footer: {
+				text: `${packageinfo.name} v${packageinfo.version}`,
+				icon_url: avatarURL
+			}
+		};
+		message.channel.send({embed});
+	});
+}
+function bdayNext(message) {
+	const num = config.nextbdays || 3;
+	const guild_id = message.guild.id;
+	const currentdate = new Date(new Date().toLocaleString("en-US", {timeZone: GuildConfig.get(guild_id, "timezone")}));
+	const currentyear = currentdate.getFullYear();
+	const currentmonth = currentdate.getMonth() + 1;
+	const currentday = currentdate.getDate();
+	const rows = Birthdays.getBirthdays(guild_id);
+	message.guild.members.fetch({user: rows.map(row => row.user_id)}).then(() => {
+		let birthdays = rows.map(row => {
+			const member = message.guild.member(row.user_id);
+			if (member) {
+				row.name = member.displayName;
+			} else {
+				Birthdays.removeUserBirthday(guild_id, row.user_id);
+			}
+			if (row.year) row.age = currentyear - row.year;
+			return row;
+		}).filter(row => !!row.name).sort((a, b) => {
+			return a.month != b.month ? a.month - b.month : (a.day != b.day ? a.day - b.day : a.name.localeCompare(b.name));
+		});
+		birthdays = [
+			...birthdays.filter(row => row.month > currentmonth || (row.month == currentmonth && row.day > currentday)),
+			...birthdays.filter(row => row.month <= currentmonth || (row.month == currentmonth && row.day <= currentday)).map(row => {row = {...row}; row.age++; return row;})
+		];
+		if (birthdays.length > num) {
+			birthdays = birthdays.filter((row, index) => index < num ? true : (row.day == birthdays[num - 1].day && row.month == birthdays[num - 1].month));
+		}
+		const description = !birthdays.length ? "(no birthdays)" : birthdays.map(row => {
+			const datestring = Intl.DateTimeFormat("en-GB", {day: "numeric", month: "long"}).format(new Date(`2000-${row.month}-${row.day}`));
+			return `<@!${row.user_id}>` + (row.age ? ` (${row.age})` : "") + ` – **${datestring}**`;
+		}).join("\n");
+		const avatarURL = client.user.avatarURL();
+		const embed = {
+			title: "Upcoming Birthdays",
+			thumbnail: {
+				url: avatarURL
+			},
+			description,
 			footer: {
 				text: `${packageinfo.name} v${packageinfo.version}`,
 				icon_url: avatarURL

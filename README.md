@@ -28,6 +28,7 @@ Default prefix is `@<bot-account> `. Successfull commands always give a response
 * `<prefix>bday set <YYYY-MM-DD>` – set your birthday (with year)
 * `<prefix>bday remove` – remove your birthday
 * `<prefix>bday list` – list all birthdays
+* `<prefix>bday next` – show the next upcoming birthdays
 * `<prefix>help` – print help and general info
 
 ### Admin Commands:
