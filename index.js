@@ -364,7 +364,7 @@ function bdayAlert(guild_id, user_id, year) {
 	let message;
 	if (year) {
 		const age = currentyear - year;
-		const ageth = age + ["st", "nd", "rd"][((age + 90) % 100 - 10) % 10 - 1] || "th";
+		const ageth = age + (["st", "nd", "rd"][((age + 90) % 100 - 10) % 10 - 1] || "th");
 		message = tpl_age.replace("{user}", `<@!${user_id}>`).replace("{age}", age).replace("{ageth}", ageth);
 	} else {
 		message = tpl_noage.replace("{user}", `<@!${user_id}>`);
