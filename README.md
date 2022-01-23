@@ -3,9 +3,9 @@
 
 ## Features
 
-* Post a message if it's someone's birthday.
+* Post a message if it's someone's birthday. (Optionally as an embed to prevent pinging the user.)
 * Give a birthday role to the birthday person for the duration of their birthday.
-* List all birthdays for the server.
+* List all birthdays for the server or just the next few upcoming ones.
 * Full configuration via commands.
 * Supports different time zones (configurable per server).
 
@@ -16,13 +16,15 @@ git clone https://github.com/seeeeew/bdaybot.git
 cd bdaybot
 npm install
 ```
-Copy `config.json.template` to `config.json` and edit it to suit your use case.
+Copy `config.json.template` to `config.json` and edit it to suit your use case. Run `node .` in the installation directory to start the bot. Optionally you can create a systemd service to run the bot permanently.
 
 ## Usage
 
 Default prefix is `@<bot-account> `. Successfull commands always give a response.
 
 ### User Commands:
+
+These commands allow users to view birthdays and manage their own.
 
 * `<prefix>bday set <MM-DD>` – set your birthday (without year)
 * `<prefix>bday set <YYYY-MM-DD>` – set your birthday (with year)
@@ -33,10 +35,12 @@ Default prefix is `@<bot-account> `. Successfull commands always give a response
 
 ### Admin Commands:
 
+These commands allow admin users to manage the per-server bot configuration.
+
 * `<prefix>config show` – shows current configuration
 * `<prefix>config help` – shows current configuration with descriptions
-* `<prefix>config set <key> <value>` – set `<key>` to `<value>`
-* `<prefix>config reset <key>` – reset `<key>` to the default value
+* `<prefix>config set <option> <value>` – set `<option>` to `<value>`
+* `<prefix>config reset <option>` – reset `<option>` to the default value
 
 ## Configuration
 
@@ -75,7 +79,7 @@ defaults to midnight if unset
 
 * **timezone**  
 time zone to be used for this server (full name from the [IANA tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), e. g. `Europe/Berlin`)  
-defaults to bot server time zone if unset
+defaults to time zone of the machine the bot is running on if unset
 
 * **bday_role**  
 role that will be given to the birthday person for the duration of their birthday (link the role)  
