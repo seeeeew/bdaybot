@@ -45,6 +45,7 @@ function help(message) {
 	message.channel.send({embed});
 }
 function bdayCmd(message, input) {
+	if (!input || !input.length) return;
 	const [, command, args] = input.match(/^([^\s]+)(?:\s+(.*))?/);
 	switch (command) {
 		case "set":
@@ -62,6 +63,7 @@ function bdayCmd(message, input) {
 	}
 }
 function bdaySet(message, input) {
+	if (!input || !input.length) return;
 	const match = input.match(/^(?:(\d{4})-)?(\d{2})-(\d{2})$/);
 	if (!match) return;
 	const [, year, month, day] = match;
@@ -182,6 +184,7 @@ function bdayNext(message) {
 	});
 }
 function configCmd(message, input) {
+	if (!input || !input.length) return;
 	const guild_id = message.guild.id;
 	const admin_roles = GuildConfig.get(guild_id, "admin_roles").split(",");
 	if (!message.member.roles.cache.filter(role => admin_roles.includes(role.id)).size && message.guild.owner.user.id !== message.author.id) return;
@@ -202,6 +205,7 @@ function configCmd(message, input) {
 	}
 }
 function configSet(message, input) {
+	if (!input || !input.length) return;
 	const guild_id = message.guild.id;
 	let [, key, value] = input.match(/^([^\s]+)(?:\s+(.*))?/);
 	switch (key) {
