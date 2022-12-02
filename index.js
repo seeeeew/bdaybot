@@ -1,11 +1,18 @@
-const Discord = require("discord.js");
-const client = new Discord.Client();
+const {Client, Intents} = require("discord.js");
+const client = new Client({
+	intents: [
+		Intents.FLAGS.GUILDS,
+		Intents.FLAGS.GUILD_MESSAGES,
+		Intents.FLAGS.MESSAGE_CONTENT,
+		Intents.FLAGS.GUILD_MEMBERS,
+	]
+});
 const {GuildConfig, Birthdays} = require("./DataManager.js");
 const Scheduler = require("./Scheduler.js");
 const config = require("./config.json");
 const packageinfo = require("./package.json");
 
-function help(message) {
+async function help(message) {
 	const guild_id = message.guild.id;
 	const prefix = GuildConfig.get(guild_id, "prefix") || `@${client.user.tag} `;
 	const commands = [
@@ -29,7 +36,7 @@ function help(message) {
 		value: entries.map(([command, description]) => `\`${prefix}${command}\` – ${description}`).join("\n")
 	}});
 	const avatarURL = client.user.avatarURL();
-	const nickname = message.guild.member(client.user).displayName;
+	const nickname = (await message.guild.members.fetch(client.user)).displayName;
 	const embed = {
 		title: `${nickname} Command Help`,
 		thumbnail: {
@@ -42,7 +49,7 @@ function help(message) {
 			icon_url: avatarURL
 		}
 	};
-	message.channel.send({embed});
+	message.channel.send({embeds: [embed]});
 }
 function bdayCmd(message, input) {
 	if (!input || !input.length) return;
@@ -75,13 +82,13 @@ function bdaySet(message, input) {
 	}
 	Birthdays.setUserBirthday(message.guild.id, message.author.id, day, month, year);
 	const datestring = Intl.DateTimeFormat("en-GB", {day: "numeric", month: "long", year: year ? "numeric" : undefined}).format(new Date(checkstring));
-	message.channel.send(`:white_check_mark: Your birthday was set to **${datestring}**.`);
+	message.channel.send({content: `:white_check_mark: Your birthday was set to **${datestring}**.`});
 	checkBdayRole(message.guild.id);
 }
 function bdayRemove(message) {
 	const changes = Birthdays.removeUserBirthday(message.guild.id, message.author.id);
 	if (changes) {
-		message.channel.send(`:white_check_mark: Your birthday was removed.`);
+		message.channel.send({content: `:white_check_mark: Your birthday was removed.`});
 		checkBdayRole(message.guild.id);
 	}
 }
@@ -92,7 +99,7 @@ function bdayList(message) {
 	const rows = Birthdays.getBirthdays(guild_id);
 	message.guild.members.fetch({user: rows.map(row => row.user_id)}).then(() => {
 		const birthdays = rows.map(row => {
-			const member = message.guild.member(row.user_id);
+			const member = message.guild.members.cache.get(row.user_id);
 			if (member) {
 				row.name = member.displayName;
 			} else {
@@ -130,7 +137,7 @@ function bdayList(message) {
 				icon_url: avatarURL
 			}
 		};
-		message.channel.send({embed});
+		message.channel.send({embeds: [embed]});
 	});
 }
 function bdayNext(message) {
@@ -146,7 +153,7 @@ function bdayNext(message) {
 	const rows = Birthdays.getBirthdays(guild_id);
 	message.guild.members.fetch({user: rows.map(row => row.user_id)}).then(() => {
 		let birthdays = rows.map(row => {
-			const member = message.guild.member(row.user_id);
+			const member = message.guild.members.cache.get(row.user_id);
 			if (member) {
 				row.name = member.displayName;
 			} else {
@@ -180,14 +187,14 @@ function bdayNext(message) {
 				icon_url: avatarURL
 			}
 		};
-		message.channel.send({embed});
+		message.channel.send({embeds: [embed]});
 	});
 }
 function configCmd(message, input) {
 	if (!input || !input.length) return;
 	const guild_id = message.guild.id;
 	const admin_roles = GuildConfig.get(guild_id, "admin_roles").split(",");
-	if (!message.member.roles.cache.filter(role => admin_roles.includes(role.id)).size && message.guild.owner.user.id !== message.author.id) return;
+	if (!message.member.roles.cache.filter(role => admin_roles.includes(role.id)).size && message.guild.ownerId !== message.author.id) return;
 	const [, command, args] = input.match(/^([^\s]+)(?:\s+(.*))?/);
 	switch (command) {
 		case "set":
@@ -258,7 +265,7 @@ function configSet(message, input) {
 				checkBdayRole(message.guild.id);
 				break;
 		}
-		message.channel.send(`:white_check_mark: \`${key}\` has been set.`);
+		message.channel.send({content: `:white_check_mark: \`${key}\` has been set.`});
 	}
 }
 function configReset(message, key) {
@@ -274,10 +281,10 @@ function configReset(message, key) {
 				checkBdayRole(message.guild.id);
 				break;
 		}
-		message.channel.send(`:white_check_mark: \`${key}\` has been reset.`);
+		message.channel.send({content: `:white_check_mark: \`${key}\` has been reset.`});
 	}
 }
-function configShow(message, full = true) {
+async function configShow(message, full = true) {
 	const guild_id = message.guild.id;
 	const descriptions = {
 		prefix: "command prefix this bot should react to (e. g. `!` or `bb!`)\n`@" + client.user.tag + " ` always works, even if this is unset",
@@ -307,7 +314,7 @@ function configShow(message, full = true) {
 	};
 	const fields = keys.map(key => {return {name: key, value: fieldvalues[key] + (full ? "\n" + descriptions[key] : "")}});
 	const avatarURL = client.user.avatarURL();
-	const nickname = message.guild.member(client.user).displayName;
+	const nickname = (await message.guild.members.fetch(client.user)).displayName;
 	const embed = {
 		title: `${nickname} Configuration`,
 		thumbnail: {
@@ -320,7 +327,7 @@ function configShow(message, full = true) {
 			icon_url: avatarURL
 		}
 	};
-	message.channel.send({embed});
+	message.channel.send({embeds: [embed]});
 }
 function parseCommand(message, input) {
 	const [, command, args] = input.match(/^([^\s]+)(?:\s+(.*))?/);
@@ -374,9 +381,9 @@ function bdayAlert(guild_id, user_id, year) {
 		message = tpl_noage.replace("{user}", `<@!${user_id}>`);
 	}
 	if (GuildConfig.get(guild_id, "alert_embed") === "true") {
-		channel.send({embed: {description: message}});
+		channel.send({embeds: [{description: message}]});
 	} else {
-		channel.send(message);
+		channel.send({content: message});
 	}
 }
 function checkBdayAlert(guild_id, time) {
@@ -434,7 +441,7 @@ function init() {
 			updateSchedulers();
 		});
 		client.on("guildDelete", updateSchedulers);
-		client.on("message", messageHandler);
+		client.on("messageCreate", messageHandler);
 		console.log("Ready!");
 	});
 	client.login(config.token);
