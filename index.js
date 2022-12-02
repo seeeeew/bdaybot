@@ -345,7 +345,7 @@ function messageHandler(message) {
 		const channels = GuildConfig.get(guild_id, "command_channels").split(",");
 		if (!channels || !channels.includes(message.channel.id)) return;
 		const guildprefix = GuildConfig.get(guild_id, "prefix");
-		const defaultprefix = `<@!${client.user.id}> `;
+		const defaultprefix = `<@${client.user.id}> `;
 		if (message.content.startsWith(guildprefix)) {
 			parseCommand(message, message.content.slice(guildprefix.length));
 		} else if (message.content.startsWith(defaultprefix)) {
