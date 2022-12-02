@@ -1,10 +1,10 @@
-const {Client, Intents} = require("discord.js");
+const {Client, GatewayIntentBits} = require("discord.js");
 const client = new Client({
 	intents: [
-		Intents.FLAGS.GUILDS,
-		Intents.FLAGS.GUILD_MESSAGES,
-		Intents.FLAGS.MESSAGE_CONTENT,
-		Intents.FLAGS.GUILD_MEMBERS,
+		GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildMessages,
+		GatewayIntentBits.MessageContent,
+		GatewayIntentBits.GuildMembers,
 	]
 });
 const {GuildConfig, Birthdays} = require("./DataManager.js");
@@ -36,7 +36,7 @@ async function help(message) {
 		value: entries.map(([command, description]) => `\`${prefix}${command}\` – ${description}`).join("\n")
 	}});
 	const avatarURL = client.user.avatarURL();
-	const nickname = (await message.guild.members.fetch(client.user)).displayName;
+	const nickname = (await message.guild.members.fetchMe()).displayName;
 	const embed = {
 		title: `${nickname} Command Help`,
 		thumbnail: {
@@ -314,7 +314,7 @@ async function configShow(message, full = true) {
 	};
 	const fields = keys.map(key => {return {name: key, value: fieldvalues[key] + (full ? "\n" + descriptions[key] : "")}});
 	const avatarURL = client.user.avatarURL();
-	const nickname = (await message.guild.members.fetch(client.user)).displayName;
+	const nickname = (await message.guild.members.fetchMe()).displayName;
 	const embed = {
 		title: `${nickname} Configuration`,
 		thumbnail: {
