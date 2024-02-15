@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/seeeeew/bdaybot#readme",
   "dependencies": {
-    "better-sqlite3": "^7.1.1",
+    "better-sqlite3": "^9.4.1",
     "discord.js": "^14.7.1",
     "node-schedule": "^1.3.2"
   },
