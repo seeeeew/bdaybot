@@ -387,10 +387,25 @@ function bdayAlert(guild_id, user_id, year) {
 	}
 }
 function checkBdayAlert(guild_id, time) {
-	if (!time) time = new Date(new Date().toLocaleString("en-US", {timeZone: GuildConfig.get(guild_id, "timezone")}));
 	const alert_channel = GuildConfig.get(guild_id, "alert_channel");
 	if (!alert_channel) return;
-	Birthdays.getUsersByBirthday(guild_id, time.getDate(), time.getMonth() + 1).forEach(row => bdayAlert(guild_id, row.user_id, row.year));
+	if (!time) time = new Date(new Date().toLocaleString("en-US", {timeZone: GuildConfig.get(guild_id, "timezone")}));
+	const day = time.getDate();
+	const month = time.getMonth() + 1;
+	const rows = Birthdays.getUsersByBirthday(guild_id, day, month);
+	const guild = client.guilds.cache.get(guild_id);
+	guild.members.fetch({user: rows.map(row => row.user_id)}).then(() => {
+		const birthdays = rows.map(row => {
+			const member = guild.members.cache.get(row.user_id);
+			if (member) {
+				row.name = member.displayName;
+			} else {
+				Birthdays.removeUserBirthday(guild_id, row.user_id);
+			}
+			return row;
+		}).filter(row => !!row.name).sort((a, b) => a.name.localeCompare(b.name));
+		birthdays.forEach(row => bdayAlert(guild_id, row.user_id, row.year));
+	});
 }
 function checkBdayRole(guild_id, time) {
 	if (!time) time = new Date(new Date().toLocaleString("en-US", {timeZone: GuildConfig.get(guild_id, "timezone")}));
